@@ -11,7 +11,7 @@ classdef ex1
             % column vector PARAMETERS containing the parameters value
             % characterizing the system and the linearization point.
             % Specifically it should contain (in the presented order):
-            %   - k : vlue of the reference curvature. 
+            %   - k : value of the reference curvature. 
             %   - car_length : length of the car in meters.  
             %   - sigma_a : sigma_a characterizing the dynamic of the
             %   actuator tracking the inputed acceleration. 
@@ -22,7 +22,7 @@ classdef ex1
             %%- set up the parameters values 
             
             %%- set up the output of the function 
-            varargout = {[]};               
+            varargout = {[1e-10, 4, 5, 1, 3]'};               
         end
         %
         function varargout = getLinealModelArrays(~,parameters)
@@ -31,14 +31,24 @@ classdef ex1
             % version of the system given the set of parameters values as
             % they where defined in function 'getSystemParameters'.
             %
+            k = parameters(1);
+            L = parameters(2);
+            sigma_a = parameters(3);
+            sigma_s = parameters(4);
+            v0 = parameters(5);
             
-            %%- Calculate arrays A,B,C,D
-            %A = 
-            %B = 
-            %C = 
-            %D = 
-            
-            varargout = {[],[],[],[]};
+            A = [0, k*v0, 0, 1, 0;
+                 0, 0, v0, 0, 0;
+                 0, -k^2*v0, 0, 0, v0/(L*(cos(atan(L*k)))^2);
+                 0, 0, 0, -sigma_a, 0;
+                 0, 0, 0, 0, -sigma_s];
+             
+            B = [0, 0, 0, sigma_a, 0;
+                 0, 0, 0, 0, sigma_s]';
+             
+            C = eye(5);
+            D = zeros(5, 2);
+            varargout = {A, B, C, D};
         end        
         %
         function varargout = getDiscreteLinearModel(~,A,B,C,D,sampling_time,method)
@@ -63,43 +73,46 @@ classdef ex1
                 % discrete-time linear model of the system.
                 
                 %%-set up output of the function 
-                varargout = {[],[]};
+                dim = 5;
+                Phi = eye(dim) + sampling_time * A;
+                Gamma = sampling_time * B;
+                varargout = {Phi, Gamma};
             elseif strcmp(method,'Psi')
                 % Dimension of Psi and Psi initialization
                 
-                %psi_dimention = ; 
-                %Psi = zeros(psi_dimention);
+                psi_dimension = 5; 
+                Psi = zeros(psi_dimension);
                 
-                number_of_iterations = 1;
+                number_of_iterations = 10;
                 for k=0:number_of_iterations
                     %update Psi iteratively. 
-                    
+                    Psi = Psi + sampling_time^k * A^k / (factorial(k+1));
                 end
                 
                 % Calculate matrices Phi and Gam
-                %Phi = ;
-                %Gamma = ;
+                Phi = eye(psi_dimension) + sampling_time*A*Psi;
+                Gamma = sampling_time*Psi*B;
                 
                 
                 %%-set up output of the function 
-                varargout = {[],[]};                
+                varargout = {Phi, Gamma};                
                 
             elseif strcmp(method,'c2d')
                 %%- Continuous representation of the system with 'ss'
                 
-                %Mc = ss( );
+                Mc = ss(A,B,C,D);
                 
                 %%- Calculate the discrete-time linear model of the system. of discretized system using 'c2d'
                 
-                %Md = c2d( ); 
+                Md = c2d(Mc, sampling_time, 'zoh'); 
                 
                 %%- Extract from Md, the Phi and Gamma matrices. 
                 
-                %Phi = ;
-                %Gamma = ;
+                Phi = Md.A;
+                Gamma = Md.B;
                 
                 %%-set up output of the function 
-                varargout = {[],[]};                
+                varargout = {Phi, Gamma};                
             end
         end                
         %
@@ -114,7 +127,7 @@ classdef ex1
             % parameters.
             %
             % Outputs NOMINAL_TRAJECTORY_X, and NOMINAL_TRAJECTORY_U must
-            % be arrays whose first collumn correspond to the time span of
+            % be arrays whose first column correspond to the time span of
             % the data point, and successive columns store the information
             % of the states and inputs, correspondingly.
             %
@@ -129,14 +142,25 @@ classdef ex1
             % - create the control inputs nominal trajectory output
             
             %%- create time vector
-            %time_vector = ;
+            time_vector = (0:sampling_time:simulation_time)';
             
             %%-create nominal state trajectory. 
-            %nominal_trajectory_x = [time_vector, ... ];
+            dim = size(time_vector,1);
+            k = parameters(1);
+            L = parameters(2);
+            v0 = parameters(5);
+            nominal_trajectory_x = [time_vector, ...
+                time_vector.*v0, ...
+                zeros(dim,1), ...
+                zeros(dim,1), ...
+                ones(dim,1).*v0, ...
+                ones(dim,1).*atan(L*k)];
             
             %%-create nominal control input trajectory. 
-            %nominal_trajectory_u = [time_vector, ... ];
-            varargout = {[],[]};
+            nominal_trajectory_u = [time_vector,  ...
+                ones(dim,1).*v0, ...
+                ones(dim,1).*atan(L*k)];
+            varargout = {nominal_trajectory_x, nominal_trajectory_u};
         end
         %
         function varargout = getInitialState(~, nominal_trajectory_x)
@@ -152,18 +176,19 @@ classdef ex1
             
             
             %%- define the value of x0 for experiment 1
-            %x0_experiment_1 = ;
+            x0_experiment_1 = zeros(5,1);
             
             %%- define the value of x0Tilde for experiment 1
-            %x0Tilde_experiment_1 = ;
+            x0Tilde_experiment_1 = x0_experiment_1 - ...
+                nominal_trajectory_x(1,2:end)';
             
             %including the different values for different experiments as a
             %cell
-            %x0 = {x0_experiment_1};
-            %x0Tilde = {x0Tilde_experiment_1};
+            x0 = {x0_experiment_1};
+            x0Tilde = {x0Tilde_experiment_1};
             
             %set outputs of the function 
-            varargout = {[],[]};
+            varargout = {x0, x0Tilde};
         end
         %
         function varargout = getOpenLoopControlSignal(~,sampling_time, simulation_time)
@@ -173,7 +198,7 @@ classdef ex1
             % do that, the desired SAMPLING_TIME between data points as
             % well as the SIMULTION_TIME is provided. 
             %
-            % As int he case of GETWORKINGTRAJECTORY function, the outputs
+            % As in the case of GETWORKINGTRAJECTORY function, the outputs
             % are meant to be used in Simulink with "From Workspace"
             % importing module. If any additional doubt regarding how the
             % data should be structured, read the information provuded by
@@ -194,21 +219,22 @@ classdef ex1
             %
             
             %%- Create a time vector.
-            %time_vector = ;
+            time_vector = (0:sampling_time:simulation_time)';
             
             %%- set the control sequence to be applied in open loop for the
             %%1st experiment. 
-            uOpenLoop_experiment_1 = [];
-            %uOpenLoop_experiment_1 = [time_vector, ];
+            dim = size(time_vector, 1);
+            uOpenLoop_experiment_1 = [time_vector, ...
+                ones(dim,1).*3.0, ...
+                ones(dim,1).*pi/6];
             
             %Include different values for the different experiments in a
             %cell.
             input_control_actions_open_loop = {uOpenLoop_experiment_1};
             
             %set output of the function
-            varargout = {[]};
+            varargout = {input_control_actions_open_loop};
         end
     end
-    
 end
 
