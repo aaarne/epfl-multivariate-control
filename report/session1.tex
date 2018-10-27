@@ -150,7 +150,7 @@ The matrices resulting from this method are called $\bb{\Phi}_{c2d}$ and $\bb{\G
 \matlabcode{matlab_snippets/c2d.m}{Conversion of the a continuous-time model to a discrete-time model in MATLAB.}{lst:c2d}
 
 \paragraph{Comparison: } In order to compare the discretization results, the norms of the differences of the matrices are compared in Table~\ref{tab:disc_comp}.
-While, the system and input matrix computed by the first-order Euler method are significantly different from the \texttt{c2d} result, the results obtained from the method using the series of the matrix exponential are very close.
+While the system and input matrix computed by the first-order Euler method are significantly different from the \texttt{c2d} result, the results obtained from the method using the series of the matrix exponential are very close.
 
 \begin{table}[h]
 	\centering
@@ -185,7 +185,7 @@ For the simulation the paramters are set to the values given in Table~\ref{tab:s
 \end{figure}
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=\textwidth]{figures/simulink_nonlin_block.png}
+	\includegraphics[width=\textwidth]{figures/nonlin.pdf}
 	\caption{Modeled continuous-time nonlinear system.}
 	\label{fig:simu_nonlin_simulink}
 \end{figure}
@@ -231,9 +231,7 @@ On the right, a step is applied in the reference velocity control signal $u_1$.
 As the curvature is very small, the angular quantities are zero and the lateral error is zero, the system behaves approximately linearly and therefore the linearized models predict the system very well.
 Even though, the step is rather large (from $3$ to $60$) the linearized systems show a good prediction of the states.
 There are only very small errors in the angular state less than $2\cdot 10^{-8}$.
-
-
-\begin{figure}[h]
+\begin{figure}[h!]
 	\centering
 	\begin{subfigure}{0.49\textwidth}
 	\includegraphics[width=\textwidth]{figures/ex1_states.pdf}
@@ -246,3 +244,67 @@ There are only very small errors in the angular state less than $2\cdot 10^{-8}$
 	\caption{Experiments in the linear regime of the model. On the left the nominal input is applied and on the right a (rather large) step in the speed is applied. As the system behaves linearly in this setting, the linearization error is very low. Note the small scale on the angle axes.}
 	\label{fig:ex1_ex2}
 \end{figure}
+
+\paragraph{Going Nonlinear by Changing the Steering Angle: }
+In the previous experiment it became obvious, that the linear approximation will work well, if the system stays in the linear subspace.
+In order to excite the nonlinearities, the control input for the steering angle $u_2$ is changed.
+Again, the initial state $\bb{x}_0$ is again set to the initial state of the nominal trajectory.
+Figure~\ref{fig:ex345} shows the results for three different speeds with the same constant steering angle input of $u_2 = \frac{\pi}{6}$.
+For low speeds (Figure~\ref{fig:ex3} and Figure~\ref{fig:ex4}) both, the continuous-time and discrete-time linear models overestimate the curvature of the path traced out by the vehicle.
+On the other hand, for higher speeds as in Figure~\ref{fig:ex5} the linearized models underestimate the curvature.
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{figures/ex1_4_3.pdf}
+		\subcaption{$u_1 = 0.5$, $u_2 = \frac{\pi}{6}$}\label{fig:ex3}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{figures/ex1_4_4.pdf}
+		\subcaption{$u_1 = 1$, $u_2 = \frac{\pi}{6}$}\label{fig:ex4}
+	\end{subfigure}
+	\begin{subfigure}{0.32\textwidth}
+		\includegraphics[width=\textwidth]{figures/ex1_4_5.pdf}
+		\subcaption{$u_1 = 3$, $u_2 = \frac{\pi}{6}$}\label{fig:ex5}
+	\end{subfigure}
+	\caption{Setting the steering angle to $\frac{\pi}{6}$ leads to no longer good approximation of the system by the linear models. For different speeds the path is either more or less curved.}
+	\label{fig:ex345}
+\end{figure}
+
+\paragraph{Settings for Very Poor Linear Approximation: }
+Given the intuition from the previous when the model underestimates and when is overestimates the curvature, further experiments can be designed where the approximation is very poor. 
+The resulting paths for these experiments are summarized in Figure~\ref{fig:ex6789}.
+
+In Figure~\ref{fig:ex8} the steering angle is kept constant and the speed is switched from low to high after half time. 
+As curvature of the linearly approximated path depends on the speed of the car, the curvature of the path traced out by the linear models changes upon changing the speed while the curvature of the nonlinear vehicle does not.
+
+Figure~\ref{fig:ex7} shows a path, where the vehicle goes back and forth on the same circle-segment with a constant magnitude in speed and a constant steering angle.
+Only the sign of the speed is flipped after half the time.
+While the "nonlinear vehicle" comes back where is started, the "linear vehicles" go somewhere completely else.
+
+The remaining figures show a flip in sign of the steering angle and both in steering angle and speed, respectively.
+In both settings the magnitudes of the steering angle and the speed are kept constant and only the signed are flipped at half the time.
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.49\textwidth}
+		\includegraphics[width=\textwidth]{figures/ex1_4_8.pdf}
+		\subcaption{Traveling on a curve with constant curvature at two different speeds.}\label{fig:ex8}
+	\end{subfigure}
+	\begin{subfigure}{0.49\textwidth}
+		\includegraphics[width=\textwidth]{figures/ex1_4_7.pdf}
+		\subcaption{Going back and forth on the same curve with the same steering angle and same absolute speed, but changing the sign of speed.}\label{fig:ex7}
+	\end{subfigure}
+	\begin{subfigure}{0.49\textwidth}
+		\includegraphics[width=\textwidth]{figures/ex1_4_6.pdf}
+		\subcaption{Traveling at constant speed and flipping the sign of the steering angle rapidly.}\label{fig:ex6}
+	\end{subfigure}
+	\begin{subfigure}{0.49\textwidth}
+		\includegraphics[width=\textwidth]{figures/ex1_4_9.pdf}
+		\subcaption{Turning the vehicle by going first forward and then backward with flipped sign in the steering angle.}\label{fig:ex9}
+	\end{subfigure}
+	\caption{Control input settings, where the linear approximation is very erroneous.}
+	\label{fig:ex6789}
+\end{figure}
+
+
