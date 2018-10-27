@@ -1,0 +1,248 @@
+%!TEX root = ./report.tex
+
+\section{Linearization, Discretization and Simulation}
+In this first part of the case study. The given system model of the path tracking system is analyzed and simulated.
+Therefore, the system will be linearized and discretized. 
+As a nominal trajectory is required for the linearization, these will be computed first.
+In the end of this first part, simulation results of the simulated non-linear system, the linearized system and a dicretized linear system will be compared.
+
+\subsection{Nominal Trajectories}
+First, a nominal trajectory is computed.
+A nominal trajectory is a function of the state variables and the input variable of time.
+The nominal trajectories are a solution of the system model.
+
+In order to obtain a nominal trajectory some contraintes are added to the state space equations.
+It is assumed that the vehicle perfectly follows the desired trajectory.
+Therefore, the lateral deviation and the heading error are zero and stay zero among all times.
+Further, a constant speed is assumed.
+Using these assumptions several contraints are added to the state space model.
+Table~\ref{tab:nominal_contraints} summarizes the constraints.
+\begin{table}[h]
+	\centering
+	\begin{tabular}{c|l}
+	\hline
+	\hline
+	\textbf{Constraint} & \textbf{Description}\\
+	\hline
+	$\bar{x}_2 = 0$\\$\bar{\dot{x}}_2 = 0$ & no lateral deviation\\\hline
+	$\bar{x}_3 = 0$\\$\bar{\dot{x}}_3 = 0$& no heading error\\\hline
+	$\bar{x}_4 = v_{ref}$\\$\bar{\dot{x}}_4 = 0$& constant speed\\\hline
+	$\bar{\dot{x}}_5 = 0$ & steering wheel actuator is at steady state\\
+	\hline
+	\end{tabular}
+	\caption{Contraints for the nominal trajectory.}
+	\label{tab:nominal_contraints}
+\end{table}
+
+\noindent Using \eqref{eq:ss1} we obtain
+\begin{equation}
+	\bar{\dot{x}}_1 = v_{ref} \Rightarrow \bar{x}_1 = v_{ref} \cdot t
+\end{equation}
+and using \eqref{eq:ss3}
+\begin{equation}
+	0 = \frac{v_{ref}}{L} \tan(\bar{x}_5) - \kappa v_{ref} \Rightarrow \bar{x}_5 = \arctan (\kappa L) \, .
+\end{equation}
+Further, using the actuator equations \eqref{eq:ss4} and \eqref{eq:ss5} the control input can be computed.
+Finally, the resulting nominal trajectory for the state $\bar{x}$ is
+\begin{eqnarray}
+	\bar{x}_1 &=& v_{ref} \cdot t\\
+	\bar{x}_2 &=& 0\\
+	\bar{x}_3 &=& 0\\
+	\bar{x}_4 &=& v_{ref}\\
+	\bar{x}_5 &=& \arctan (\kappa L)
+\end{eqnarray}
+and for the control input $\bar{u}$
+\begin{eqnarray}
+	\bar{u}_1 &=& v_{ref}\\
+	\bar{u}_2 &=& \arctan (\kappa L)\, .
+\end{eqnarray}
+
+\subsection{Linearization using Small Signal Linearization}
+For the linearization of the system the small signal linearization approximation for deviations close to the nominal trajectory are used.
+Therefore, Jacobians of the system model $\mathbf{\dot{x}} = \mathbf{f}(\mathbf{x}, \mathbf{u}, t)$ with respect to the state vector $\mathbf{x}$ and the input vector $\mathbf{u}$ are computed.
+First the Jacobian of the nonlinear system model with respect to the state is computed
+\begin{equation}
+	\frac{\partial \mathbf{f}}{\partial \mathbf{x}} = \begin{bmatrix}
+		0 & \frac{\kappa x_4 \cos(x_3)}{(kx_2 - 1)^2} & -\frac{x_4 \sin (x_3)}{1 - x_2 \kappa} & \frac{\cos (x_3)}{1 - x_2 \kappa} & 0\\
+		0 & 0 & x_4 \cos(x_3) & \sin(x_3) & 0\\
+		0 & -\frac{\kappa^2 x_4 \cos(x_3)}{(\kappa x_2 - 1)^2} & \left(\frac{1}{L}\tan(x_5) - \frac{\kappa \cos (x_3)}{1 - x_2 \kappa}\right) & \frac{\kappa x_4 \sin(x_3)}{1 - x_2 \kappa} & \frac{x_4}{L \cos^2(x_5)}\\
+		0 & 0 & 0 & -\sigma_a & 0\\
+		0 & 0 & 0 & 0& -\sigma_s\\
+	\end{bmatrix}
+\end{equation}
+and the Jacobian with respect to the input is
+\begin{equation}
+	\frac{\partial \mathbf{f}}{\partial \mathbf{u}} = \begin{bmatrix}
+		0 & 0\\
+		0 & 0\\
+		0 & 0\\
+		\sigma_a & 0\\
+		0 & \sigma_s
+	\end{bmatrix}\, .
+\end{equation}
+In the small signal linearization technique the system is linearized around the nominal trajectory.
+Therefore, the system is transformed to the nominal trajectory using
+\begin{equation}
+	\boldsymbol{\tilde{x}} = \mathbf{x} - \boldsymbol{\bar{x}}
+\end{equation}
+and
+\begin{equation}
+	\boldsymbol{\tilde{u}} = \mathbf{u} - \boldsymbol{\bar{u}} \, .
+\end{equation}
+Using the identity $\arctan(x) = \frac{1}{1 + x^2}$ the dynamics of the deviation from the nominal trajectory are now approximated by the linear model and the Jacobian is computed at the nominal trajectory
+\begin{equation}
+	\bb{\dot{\tilde{x}}} = \mathbf{A}\bb{\tilde{x}} + \mathbf{B}\bb{\tilde{u}} = \begin{bmatrix}
+		0 & \kappa v_{ref} & 0 & 1 & 0\\
+		0 & 0 & v_{ref} & 0 & 0\\
+		0 & -\kappa^2 v_{ref} & 0 & 0 & \frac{v_{ref}}{L} \left(1 + L^2 \kappa^2\right)\\
+		0 & 0 & 0 & -\sigma_a & 0\\
+		0 & 0 & 0 & 0 & -\sigma_s
+	\end{bmatrix} \bb{\tilde{x}} + \begin{bmatrix}
+		0&0\\
+		0&0\\
+		0&0\\
+		\sigma_a & 0\\
+		0 & \sigma_s
+	\end{bmatrix} \bb{\tilde{u}}
+\end{equation}
+and
+\begin{equation}
+	\bb{\tilde{y}} = \mathbf{C}\bb{\tilde{x}} + \mathbf{D}\bb{\tilde{u}} = \mathbf{I}\bb{\tilde{x}}\, .
+\end{equation}
+
+\subsection{Discretization}
+The discretization of the linearized system is implemented using three different methods, whose implementations are explained below.
+
+\paragraph{Euler:} The Euler method uses a first-order Taylor approximation for the discretization of a linear continuous-time system.
+Let $\bb{A}$ be the system matrix and $\bb{B}$ be the input matrix.
+Further, let $h$ be the sampling time. 
+Then, the discrete-time approximation for the system matrix $\bb{\Phi}$ and the discrete-time input matrix $\bb{\Gamma}$ are computed as
+\begin{equation}
+	\bb{\Phi}_{euler} = \bb{I} + \bb{A}h
+\end{equation}
+and
+\begin{equation}
+	\bb{\Gamma}_{euler} = \bb{B}h \, .
+\end{equation}
+
+\paragraph{Series expansion of the Matrix Exponential: } The method uses an intermediate matrix $\bb{\Psi}$ to compute better approximations for the discrete-time system and input matrix.
+Define a matrix $\bb{\Psi}_0 = 0$ as the zero-matrix.
+Then, the recursive update rule for the matrix is given as in the course notes
+\begin{equation}
+	\bb{\Psi}_{n+1} = \bb{\Psi}_n + \frac{h^n \bb{A}^n}{(n+1)!} \quad \forall n\ge0\, .
+\end{equation}
+I chose this formulation of the $\bb{\Psi}$-matrix as it is tail-recursive and can therefore be implemented in a simple ascending for-loop.
+The denominator of the increment gets large quickly as it grows $\mathfrak{O}(n!)$.
+Consequently, only a few iterations are required for convergence. 
+I chose $N=10$ iterations in total.
+Given the final intermediate matrix $\bb{\Psi}_N$ the discrete-time system and input matrix can be computed as follows
+\begin{equation}
+	\bb{\Phi}_{\Psi} = \bb{I} + h\bb{A}\bb{\Psi}_N	
+\end{equation}
+and
+\begin{equation}
+	\bb{\Gamma}_{\Psi} = h\bb{\Psi}_N \bb{B}\, .
+\end{equation}
+
+\paragraph{MATLAB's continuous-time to discrete-time command \texttt{c2d}: } Finally, the discretization is computed using the MATLAB command \texttt{c2d}, where a zero-order hold is used as discretization method.
+Listing~\ref{lst:c2d} shows the conversion from a continuous-time system to a discrete-time system in MATLAB.
+The matrices resulting from this method are called $\bb{\Phi}_{c2d}$ and $\bb{\Gamma}_{c2d}$, respectively.
+\matlabcode{matlab_snippets/c2d.m}{Conversion of the a continuous-time model to a discrete-time model in MATLAB.}{lst:c2d}
+
+\paragraph{Comparison: } In order to compare the discretization results, the norms of the differences of the matrices are compared in Table~\ref{tab:disc_comp}.
+While, the system and input matrix computed by the first-order Euler method are significantly different from the \texttt{c2d} result, the results obtained from the method using the series of the matrix exponential are very close.
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{c|c}
+	\hline
+		 $||\bb{\Phi}_{c2d} - \bb{\Phi}_{euler}||_F$& $0.11$ \\\hline
+		 $||\bb{\Gamma}_{c2d} - \bb{\Gamma}_{euler}||_F$& $0.11$ \\\hline
+		 $||\bb{\Phi}_{c2d} - \bb{\Phi}_{\Psi}||_F$& $5 \cdot 10^{-13}$ \\\hline
+		 $||\bb{\Gamma}_{c2d} - \bb{\Gamma}_{\Psi}||_F$& $5 \cdot 10^{-13}$ \\\hline
+	\end{tabular}
+	\caption{Comparison of the discretized system and input matrices. The matrices form the first-order Euler method and the "$\Psi$"-method are compared to the results of the discrete state space model provided by MATLAB.}
+	\label{tab:disc_comp}
+\end{table}
+
+\subsection{Simulation}
+All three models, namely
+\begin{itemize}
+	\item the nonlinear, continuous-time model,
+	\item the linearized continuous-time model and
+	\item the linearized discrete-time model
+\end{itemize}
+are implemented in SIMULINK based on the template provided. 
+Figure~\ref{fig:simu_simulink} shows the complete diagram and Figure~\ref{fig:simu_nonlin_simulink} shows the content of the block modeling the continuous-time nonlinear system.
+Further, the nonlinear model block is completed based on equations \eqref{eq:ss1} to \eqref{eq:ss5}.
+For the simulation the paramters are set to the values given in Table~\ref{tab:simu_param_values}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{figures/simu_model.pdf}
+	\caption{Simulink model for the simulation}
+	\label{fig:simu_simulink}
+\end{figure}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\textwidth]{figures/simulink_nonlin_block.png}
+	\caption{Modeled continuous-time nonlinear system.}
+	\label{fig:simu_nonlin_simulink}
+\end{figure}
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{c|l}
+	\hline
+	\hline
+	\textbf{Parameter} & \textbf{Value}\\
+	\hline
+	$L$ & $4$\\
+	$\kappa (s)$ & $1e^{-10}$\\
+	$\sigma_a$ & 5\\
+	$\sigma_s$ & 1\\
+	$v_{ref}$ & 3\\
+	\hline
+	\hline
+	\end{tabular}
+	\caption{Values for the system parameters used in the simulation}
+	\label{tab:simu_param_values}
+\end{table}
+In order to investigate the behaviour of the systems, several experiments are carried out on the model.
+Among all simulation the initial condition $\bb{x}_0$ is set to the initial value of the nominal trajectory 
+\begin{equation}
+	\bb{x}_0 = \bb{\bar{x}} (0) \, 
+\end{equation}
+and the system has no transience at $t = 0$. 
+The initial state for the linearized systems $\bb{\tilde{x}}_0$ is always set to $0$ such that, again, the system has no transience at $t=0$.
+Below, different simulations and experiments on the system are presented.
+
+\paragraph{Exact Model in the Linear Subspace of the System: }
+Consider again the system model $\mathbf{\dot{x}} = \mathbf{f}(\mathbf{x}, \mathbf{u}, t)$ in equations \eqref{eq:ss1} to \eqref{eq:ss5}.
+The system is linear, as long as all the quantities ($x_2$, $x_3$ and $x_5$) stay constant, there is no heading error $x_3 = 0$ and the curvature $\kappa$ is zero.
+In this case, the trigonometric functions in the differential equations behave as constants and the $\frac{1}{1- \kappa x_2}$ terms vanish.
+On the nominal trajectory is no heading error and the curvature is very close ($\kappa = 1e^{-10}$) to zero.
+Therefore, in this case, even the nonlinear system model behaves linearly.
+The expectation is that there should be approximately no linearization error when applying $\bb{\bar{u}}$ as $\kappa$ is very small.
+The same is true, when applying a varying reference speed as control input $u_1$ as long as the curvature is approximately zero and there is no error.
+Figure~\ref{fig:ex1_ex2} shows two experiments, where the system is kept in the linear regime.
+On the left, exactly the nominal input is applied as control input.
+On the right, a step is applied in the reference velocity control signal $u_1$.
+As the curvature is very small, the angular quantities are zero and the lateral error is zero, the system behaves approximately linearly and therefore the linearized models predict the system very well.
+Even though, the step is rather large (from $3$ to $60$) the linearized systems show a good prediction of the states.
+There are only very small errors in the angular state less than $2\cdot 10^{-8}$.
+
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.49\textwidth}
+	\includegraphics[width=\textwidth]{figures/ex1_states.pdf}
+	\subcaption{Applying exactly the nominal input $\bb{\bar{u}}$.}
+	\end{subfigure}
+	\begin{subfigure}{0.49\textwidth}
+	\includegraphics[width=\textwidth]{figures/ex2_states.pdf}
+	\subcaption{Applying a step signal on the reference speed $u_1$.}
+	\end{subfigure}
+	\caption{Experiments in the linear regime of the model. On the left the nominal input is applied and on the right a (rather large) step in the speed is applied. As the system behaves linearly in this setting, the linearization error is very low. Note the small scale on the angle axes.}
+	\label{fig:ex1_ex2}
+\end{figure}
