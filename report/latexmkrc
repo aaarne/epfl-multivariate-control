@@ -1,3 +1,5 @@
+@default_files = ('report.tex');
+
 $pdf_mode = 1;
 $bibtex_use = 2;
 $clean_ext = 'thesis-blx.bib run.xml';
