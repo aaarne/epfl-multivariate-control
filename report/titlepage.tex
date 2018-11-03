@@ -1,0 +1,41 @@
+%!TEX root = ./report.tex
+\begin{titlepage}
+
+\makeatletter
+\let\thetitle\@title
+\let\theauthor\@author
+\let\thedate\@date
+\let\thesubtitle\@subtitle
+\makeatother
+
+\centering
+\vspace*{0.5 cm}
+
+    \includegraphics[width=0.6\linewidth]{figures/EPFL_Logo.png}\\[1.0 cm]	
+	\textsc{\Large\thesubtitle}\\[1.0cm]				
+	\rule{\linewidth}{0.2 mm} %\\[0.5 cm]
+	{ \LARGE \thetitle}\\
+	\rule{\linewidth}{0.2 mm} \\ %\\[1.5 cm]
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=.6\textwidth]{figures/model.pdf}
+	\caption{Model of trajectories and the vehicle. Taken from the case study handout.}
+	\label{fig:vehicle_model}
+\end{figure}
+	\rule{\linewidth}{0.2 mm} \\[1.5 cm]
+
+	\begin{minipage}{0.5\textwidth}
+		\begin{flushleft} \large
+			\emph{{Student}:}\\
+			\theauthor
+			\end{flushleft}
+			\end{minipage}~
+			\begin{minipage}{0.4\textwidth}
+			\begin{flushright} \large
+			\emph{{Lecturers}:} \\	
+			Prof. Dennis Gillet \\ Ezequiel Debada  \\
+		\end{flushright}
+	\end{minipage} \\ %[1.2cm]
+	{\vspace{3cm} \large \thedate}\\[1.5 cm]
+	\vfill
+\end{titlepage}
