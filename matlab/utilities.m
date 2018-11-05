@@ -111,8 +111,7 @@ classdef utilities
                     end
                 end
                 strings = strings(valid_idx>0);
-                legend(ax_cells{3}(1), strings{:});
-                grid;                
+                legend(ax_cells{3}(1), strings{:});                   
 %                 
 %                 
 %                 
