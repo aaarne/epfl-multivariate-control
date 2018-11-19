@@ -132,13 +132,13 @@ classdef ex2
             % The information regarding the values to be given to the
             % output matrices can be found in the exercise handout. 
 
-            Q1 = [0, 0, 0, 0, 0;
-                  0, 1, 0, 0, 0;
-                  0, 0, 1, 0, 0;
+            Q1 = [1e-10, 0, 0, 0, 0;
+                  0, 10, 0, 0, 0;
+                  0, 0, 10, 0, 0;
                   0, 0, 0, 1, 0;
                   0, 0, 0, 0, 1];
             Q2 = [1, 0;
-                  0, 1];
+                  0, 10];
 
             varargout = {Q1, Q2};
         end
@@ -221,7 +221,7 @@ classdef ex2
             % wanted to be used. 
             options = {'circle', 'path_1', 'path_2', 'path_3'};
             
-            varargout = {options{1}};
+            varargout = {options{3}};
         end    
         %        
         function varargout = getWorkingTrajectory(~,sampling_time, simulation_time, parameters)
@@ -286,18 +286,13 @@ classdef ex2
             
             
             %%- define the value of x0 for experiment 1
-            x0_experiment_1 = zeros(5,1);
+            x0_experiment_1 = [0, -10, pi/3, 5, 0];
             
             %%- define the value of x0Tilde for experiment 1
             x0Tilde_experiment_1 = zeros(5,1);
             
-            %including the different values for different experiments as a
-            %cell
-            x0 = {x0_experiment_1};
-            x0Tilde = {x0Tilde_experiment_1};
-            
             %set outputs of the function 
-            varargout = {x0, x0Tilde, x0};
+            varargout = {x0_experiment_1, x0Tilde_experiment_1, x0_experiment_1};
         end        
         %        
         function varargout = getNoiseModule(~)
@@ -325,12 +320,13 @@ classdef ex2
             % 
             %
             %%- prepare noise structure
-            %noise.mean = ;
-            %noise.std_deviation = ;
-            %noise.seed = ;
+            noise.mean = [0, 0, 0, 0, 0];
+            % noise.std_deviation = [1, 1, 0.1745, 2, 0];
+            noise.std_deviation = [1, 0.1, 0.1, 0.5, 0.1];
+            noise.seed = 42*[1, 1, 1, 1, 1];
             
             %%- set up the output of the function
-            varargout = {[]};
+            varargout = {noise};
         end        
         %        
         function varargout = getCprime(~)
@@ -348,10 +344,10 @@ classdef ex2
             %
             %
             %%- set the desired value for C'
-            %Cprime = ;
+            Cprime = diag([1, 1, 0, 1, 1]);
             
             %%- set up the output of the function 
-            varargout = {[]};
+            varargout = {Cprime};
         end
         %        
         function varargout = getCArrayConsideringMeasurableStates(~,C)
@@ -375,9 +371,20 @@ classdef ex2
             %%- set up the value of CMes 
             
             %%- set up arrays CObs and DObs que the appropriate size. 
+            Cmes = [
+                1, 0, 0, 0, 0;
+                0, 1, 0, 0, 0;
+                %0, 0, 1, 0, 0;
+                0, 0, 0, 1, 0;
+                0, 0, 0, 0, 1
+                ];
+
+            n_outputs = size(Cmes, 1);
+            Cobs = eye(5);
+            Dobs = zeros(5, 2+n_outputs);
             
             %%- set up the outputs of the function
-            varargout = {[],[],[]};
+            varargout = {Cmes, Cobs, Dobs};
         end
         %
         function varargout = checkObservability(~,Phi,CMes)
@@ -400,14 +407,14 @@ classdef ex2
             
             
             %%- calculate the observability matrix
-            %Observability_matrix = ;
+            Observability_matrix = obsv(Phi, CMes);
             
             %%- Compute the number of non-observable states of the system
-            %n_states_not_observable = ;            
+            n_states_not_observable = length(Phi) - rank(Observability_matrix);            
             
-            %fprintf('\nObservability check: %d states cannot be observed with this configuration\n',n_states_not_observable);
+            fprintf('\nObservability check: %d states cannot be observed with this configuration\n',n_states_not_observable);
             
-            varargout = {[]};
+            varargout = {n_states_not_observable};
         end
         %
         function varargout = getObserverGain(~,Phi,Gamma,lqr_K,c_meassurable)
@@ -447,17 +454,19 @@ classdef ex2
             
             %%- calculate the place where the close loop observation poles
             %%are wanted to be. 
-            
-            %selected_poles = ;
+
+            phi_cl = Phi - Gamma * lqr_K;
+
+            percentage = 1;
+            selected_poles = percentage * eig(phi_cl); % Dead-beat observer
             
             %%- calculate the observability matrix. 
             
-            %L = ;
+            L = place(Phi', c_meassurable', selected_poles)';
             
             %%- set up the output of the function. 
-            varargout = {[],[]};
+            varargout = {L, selected_poles};
         end
     end
-
 end
 
