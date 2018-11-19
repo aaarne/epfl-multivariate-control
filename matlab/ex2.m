@@ -131,25 +131,6 @@ classdef ex2
             %
             % The information regarding the values to be given to the
             % output matrices can be found in the exercise handout. 
-            time_vector = (0:sampling_time:simulation_time)';
-            
-            %%-create nominal state trajectory. 
-            dim = size(time_vector,1);
-            k = parameters(1);
-            L = parameters(2);
-            v0 = parameters(5);
-            nominal_trajectory_x = [time_vector, ...
-                time_vector.*v0, ...
-                zeros(dim,1), ...
-                zeros(dim,1), ...
-                ones(dim,1).*v0, ...
-                ones(dim,1).*atan(L*k)];
-            
-            %%-create nominal control input trajectory. 
-            nominal_trajectory_u = [time_vector,  ...
-                ones(dim,1).*v0, ...
-                ones(dim,1).*atan(L*k)];
-            varargout = {nominal_trajectory_x, nominal_trajectory_u};
         end
         %        
         function varargout = calculateLQRGain(~,Phi,Gamma,Q1,Q2, method)
@@ -256,16 +237,25 @@ classdef ex2
             % - create the nominal states trajectory output
             % - create the control inputs nominal trajectory output
             
-            
-            %%- create time vector
-            %time_vector = ;
+            time_vector = (0:sampling_time:simulation_time)';
             
             %%-create nominal state trajectory. 
-            %nominal_trajectory_x = [time_vector, ... ];
+            dim = size(time_vector,1);
+            k = parameters(1);
+            L = parameters(2);
+            v0 = parameters(5);
+            nominal_trajectory_x = [time_vector, ...
+                time_vector.*v0, ...
+                zeros(dim,1), ...
+                zeros(dim,1), ...
+                ones(dim,1).*v0, ...
+                ones(dim,1).*atan(L*k)];
             
             %%-create nominal control input trajectory. 
-            %nominal_trajectory_u = [time_vector, ... ];
-            varargout = {[],[]};
+            nominal_trajectory_u = [time_vector,  ...
+                ones(dim,1).*v0, ...
+                ones(dim,1).*atan(L*k)];
+            varargout = {nominal_trajectory_x, nominal_trajectory_u};
         end
         %
         function varargout = getInitialState(~,ntX)
