@@ -131,6 +131,16 @@ classdef ex2
             %
             % The information regarding the values to be given to the
             % output matrices can be found in the exercise handout. 
+
+            Q1 = [0, 0, 0, 0, 0;
+                  0, 1, 0, 0, 0;
+                  0, 0, 1, 0, 0;
+                  0, 0, 0, 1, 0;
+                  0, 0, 0, 0, 1];
+            Q2 = [1, 0;
+                  0, 1];
+
+            varargout = {Q1, Q2};
         end
         %        
         function varargout = calculateLQRGain(~,Phi,Gamma,Q1,Q2, method)
@@ -170,36 +180,38 @@ classdef ex2
                 %%gain using riccati equation. 
                 
                 %%- Initialize S
-                %S =; 
+                S = Q1; 
                 
                 %%- number of interations
-                %n_iterations=;
+                n_iterations = 2500;
 
                 % Vector of singular values (to control the convergence of the method
                 %singular_values = zeros(n_iterations,size(S,1));
 
                 %Implementation of Ricatti method 
-                %for i=1:n_iterations
+                for i=1:n_iterations
                     
-                    %%- Ricatti Equation 
-                    %S=;
+                    %- Ricatti Equation 
+                    S=Phi' * (S - S*Gamma*inv(Q2 + Gamma' * S * Gamma) * Gamma' * S) * Phi + Q1;
                     
-                    %%- store singular values (use svd function) 
-                    %singular_values(i,:) = ;
-                %end
+                    %- store singular values (use svd function) 
+                    singular_values(i,:) = svd(S);
+                end
                 
                 %%-calculate the LQR control gain. 
-                %KLqrRiccati = ; 
+                KLqrRiccati = inv(Q2 + Gamma'*S*Gamma) * Gamma' * S * Phi; 
                 
                 %%-set output of the function.
-                varargout = {[],[],[]};
+                varargout = {KLqrRiccati, S, singular_values};
                 
             elseif strcmp(method,'Matlab')
                 
                 %%- Use dlqr to calculate the LQR control gain and S array
                 
                 %%- set the output of the function 
-                varargout = {[],[]};
+
+                [K, S, e] = dlqr(Phi, Gamma, Q1, Q2);
+                varargout = {K, S};
             end
         end
         %        
@@ -209,7 +221,7 @@ classdef ex2
             % wanted to be used. 
             options = {'circle', 'path_1', 'path_2', 'path_3'};
             
-            varargout = {[]};
+            varargout = {options{1}};
         end    
         %        
         function varargout = getWorkingTrajectory(~,sampling_time, simulation_time, parameters)
@@ -274,18 +286,18 @@ classdef ex2
             
             
             %%- define the value of x0 for experiment 1
-            %x0_experiment_1 = ;
+            x0_experiment_1 = zeros(5,1);
             
             %%- define the value of x0Tilde for experiment 1
-            %x0Tilde_experiment_1 = ;
+            x0Tilde_experiment_1 = zeros(5,1);
             
             %including the different values for different experiments as a
             %cell
-            %x0 = {x0_experiment_1};
-            %x0Tilde = {x0Tilde_experiment_1};
+            x0 = {x0_experiment_1};
+            x0Tilde = {x0Tilde_experiment_1};
             
             %set outputs of the function 
-            varargout = {[],[],[]};
+            varargout = {x0, x0Tilde, x0};
         end        
         %        
         function varargout = getNoiseModule(~)
