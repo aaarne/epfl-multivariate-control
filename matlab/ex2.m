@@ -22,7 +22,7 @@ classdef ex2
             %%- set up the parameters values 
             
             %%- set up the output of the function 
-            varargout = {[]};                
+            varargout = {[1e-10, 4, 5, 1, 3]'};               
         end
         %
         function varargout = getLinealModelArrays(~,parameters)
@@ -37,8 +37,24 @@ classdef ex2
             %B = 
             %C = 
             %D = 
+            k = parameters(1);
+            L = parameters(2);
+            sigma_a = parameters(3);
+            sigma_s = parameters(4);
+            v0 = parameters(5);
             
-            varargout = {[],[],[],[]};
+            A = [0, k*v0, 0, 1, 0;
+                 0, 0, v0, 0, 0;
+                 0, -k^2*v0, 0, 0, v0/(L*(cos(atan(L*k)))^2);
+                 0, 0, 0, -sigma_a, 0;
+                 0, 0, 0, 0, -sigma_s];
+             
+            B = [0, 0, 0, sigma_a, 0;
+                 0, 0, 0, 0, sigma_s]';
+             
+            C = eye(5);
+            D = zeros(5, 2);
+            varargout = {A, B, C, D};
         end                
         %
         function varargout = getDiscreteLinearModel(~,A,B,C,D,sampling_time,method)
@@ -58,50 +74,53 @@ classdef ex2
             % - c2d : use the matlab command c2d. 
             %
             % 3.4 - Continuous representation of the system with 'ss'
-
             if strcmp(method,'Euler')
                 % Use here Euler approximation to approximate the
                 % discrete-time linear model of the system.
                 
                 %%-set up output of the function 
-                varargout = {[],[]};
+                dim = 5;
+                Phi = eye(dim) + sampling_time * A;
+                Gamma = sampling_time * B;
+                varargout = {Phi, Gamma};
             elseif strcmp(method,'Psi')
                 % Dimension of Psi and Psi initialization
                 
-                %psi_dimention = ; 
-                %Psi = zeros(psi_dimention);
+                psi_dimension = 5; 
+                Psi = zeros(psi_dimension);
                 
-                number_of_iterations = 1;
+                number_of_iterations = 10;
                 for k=0:number_of_iterations
                     %update Psi iteratively. 
-                    
+                    Psi = Psi + sampling_time^k * A^k / (factorial(k+1));
                 end
                 
                 % Calculate matrices Phi and Gam
-                %Phi = ;
-                %Gamma = ;
+                Phi = eye(psi_dimension) + sampling_time*A*Psi;
+                Gamma = sampling_time*Psi*B;
                 
                 
                 %%-set up output of the function 
-                varargout = {[],[]};                
+                varargout = {Phi, Gamma};                
                 
             elseif strcmp(method,'c2d')
                 %%- Continuous representation of the system with 'ss'
                 
-                %Mc = ss( );
+                Mc = ss(A,B,C,D);
                 
                 %%- Calculate the discrete-time linear model of the system. of discretized system using 'c2d'
                 
-                %Md = c2d( ); 
+                Md = c2d(Mc, sampling_time, 'zoh'); 
                 
                 %%- Extract from Md, the Phi and Gamma matrices. 
                 
-                %Phi = ;
-                %Gamma = ;
+                Phi = Md.A;
+                Gamma = Md.B;
                 
                 %%-set up output of the function 
-                varargout = {[],[]};                
+                varargout = {Phi, Gamma};                
             end
+
         end       
         %
         function [varargout] = getCostFunctArrays(~,nStates,nInputs)
@@ -112,12 +131,25 @@ classdef ex2
             %
             % The information regarding the values to be given to the
             % output matrices can be found in the exercise handout. 
+            time_vector = (0:sampling_time:simulation_time)';
             
-            %%- set Q1 and Q2 values. 
-            %Q1 = 
-            %Q2 = 
+            %%-create nominal state trajectory. 
+            dim = size(time_vector,1);
+            k = parameters(1);
+            L = parameters(2);
+            v0 = parameters(5);
+            nominal_trajectory_x = [time_vector, ...
+                time_vector.*v0, ...
+                zeros(dim,1), ...
+                zeros(dim,1), ...
+                ones(dim,1).*v0, ...
+                ones(dim,1).*atan(L*k)];
             
-            varargout = {[],[]};
+            %%-create nominal control input trajectory. 
+            nominal_trajectory_u = [time_vector,  ...
+                ones(dim,1).*v0, ...
+                ones(dim,1).*atan(L*k)];
+            varargout = {nominal_trajectory_x, nominal_trajectory_u};
         end
         %        
         function varargout = calculateLQRGain(~,Phi,Gamma,Q1,Q2, method)
