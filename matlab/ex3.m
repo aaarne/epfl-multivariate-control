@@ -16,7 +16,8 @@ classdef ex3
             %%- set up initial state
             
             %%- set up the output of the function 
-            varargout = {[]};
+            x0 = [0, 0, 0, 0, 0]';
+            varargout = {x0};            
         end        
         %        
         function varargout = getSystemParameters(~)
@@ -35,7 +36,8 @@ classdef ex3
             %%- set up the parameters values 
             
             %%- set up the output of the function 
-            varargout = {[]};            
+            varargout = {[1e-10, 4, 5, 1, 3]'};               
+
         end          
         %
         function varargout = getAllowedControlValues(~)
@@ -48,14 +50,15 @@ classdef ex3
             
             %%- set up the values that the control inputs are allowed to
             %%take 
-            %u_1 = ;
-            %u_2 = ;
+            u_1 = [3];
+            u_2 = [-pi/4, 0, pi/4];
             
             %%- Calculate all possible combinations of those two states 
-            %u  = ;
+            [X, Y] = meshgrid(u_1, u_2);
+            u  = [X, Y];
             
             %%- set up the output of the function 
-            varargout = {[]};                        
+            varargout = {u};                        
         end        
         %
         function varargout = select_reference_path(~)
@@ -63,10 +66,10 @@ classdef ex3
             % of the mat file containing the path to be tracked that is
             % wanted to be used. 
             %
-            %options = {'circle', 'path_1', 'path_2', 'path_3'};
+            options = {'circle', 'path_1', 'path_2', 'path_3'};
             
             %%- set up the output of the function 
-            varargout = {[]};                                    
+            varargout = {options{1}};
         end        
         %
         function varargout = getObstacle(~)
@@ -80,10 +83,23 @@ classdef ex3
             % be run. 
             
             %%-set up the obstacle(s) position
-            %obstacles = ;
-            
+            obstacles01 = [
+                39, 40
+                39.5, 40
+                40, 40
+                40.5, 40
+                41, 40
+            ]
+
+            obstacles02 = [
+                obstacles01
+                0, 80
+            ]
+
+            obstacles03 = [];
+
             %%- set up the output of the function 
-            varargout = {[]};                                    
+            varargout = {{ obstacles01, obstacles02, obstacles03 }};                                    
         end        
         %
         function varargout = assignCostsToNodes(~,nodes, edges, obstacles)
@@ -162,42 +178,55 @@ classdef ex3
             % Hint: you could first calculate J(u_{i-j}) + J(x_j) for every
             % node in a parallel way (no loops needed), and then, iterate
             % over the edges updating the cost of the predecessor nodes
-            % using the sucessor nodes information. 
+            % using the successor nodes information. 
             %
+
+            % Weights:
+            w_track_d = 1;
+            w_track_heading = 1;
+            w_obs_avoidance = 300;
+
             fprintf('\nAssigning costs to nodes...');
             ut = utilities;
             
             %%- Calculate the path tracking cost for each node
-            %path_tracking_cost = ;
+            path_tracking_cost = abs(w_track_d * nodes(:,8)) + abs(w_track_heading * nodes(:,9));
             
             %%- Calculate the distance of every node to every considered
             %obstacle. You could iterate over the obstacles, but avoid
             %iterating over the nodes. 
-            %dist_nodes_to_obs_square = ;
+            n_nodes = size(nodes, 1);
+            n_obstacles = size(obstacles.position, 1);
+            dists = zeros(n_nodes, n_obstacles);
+            for i = 1:n_obstacles
+                d = nodes(:,4:5) - obstacles.position(i,:);
+                dists(:,i) = sum(d.^2 , 2);
+            end
+            dist_nodes_to_obs_square = sum(dists, 2);
             
             %%- calculate the obstacle_avoidance cost term. 
-            %obstacle_avoidance_cost = ;
+            obstacle_avoidance_cost = w_obs_avoidance ./ dist_nodes_to_obs_square;
             
             
             %%- calculate the dead_end_cost of every node
-            %dead_end_cost = 
+            dead_end_cost = zeros(n_nodes, 1);
+            dead_end_cost(nodes(:,3) == 2) = inf;
             
             %%- calculate the resulting J(x_i) cost and store it in
             %%node_costs 
-            %node_costs = path_tracking_cost + obstacle_avoidance_cost + dead_end_cost;
+            node_costs = path_tracking_cost + obstacle_avoidance_cost + dead_end_cost;
             
             %Iterate over the edges updating the cost of the successor node
             %considering the cost of its predecessor.
             
             %iteration_counter = 0;
             for i = 1:size(edges,1)
-                %iteration_counter = ut.printProgression(iteration_counter, size(edges,1), 50);
-                
-                %%- update the cost of the successor. 
+                iteration_counter = ut.printProgression(i, size(edges,1), 50);
+                node_costs(edges(i,2)) = node_costs(edges(i,2)) + node_costs(edges(i,1));
             end
             
             %%- set up the output of the function 
-            varargout = {[]};                                    
+            varargout = {node_costs};                                    
         end      
         %
         function varargout = backtrackNodeValues(~, nodes, edges, node_cost, sampling_time)
@@ -234,38 +263,41 @@ classdef ex3
             % columnd of NODES array. 
             
             %%- identify the terminal nodes
-            %terminal_nodes_id = ;
+            terminal_nodes_id = nodes(nodes(:,3) == 0, 1);
+
+            [e, idx] = min(node_cost(terminal_nodes_id));
             
             %%- find the terminal node with the lowest cost. 
-            %terminal_node_lowest_cost_id = 
+            terminal_node_lowest_cost_id = terminal_nodes_id(idx);
+            disp(sprintf("Lowest cost %f at node %d.", e, terminal_node_lowest_cost_id));
             
             %%- set up the selected terminal node as the 'current node'
-            %current_node = ;
+            current_node = terminal_node_lowest_cost_id;
             
             %%- Initialize the optimal_node_sequence. 
-            %n_nodes_in_optimal_sequence =
-            %optimal_node_sequence = zeros(, 1);
+            n_nodes_in_optimal_sequence = round(nodes(current_node, 2) / sampling_time);
+            optimal_node_sequence = zeros(n_nodes_in_optimal_sequence, 1);
             
             %%- set up the last point of the optimal node sequence. 
-            %optimal_node_sequence(n_nodes_in_optimal_sequence) = ;
+            optimal_node_sequence(n_nodes_in_optimal_sequence) = current_node;
             
             %%- explore the graph from the last point backwards by saving
             %%the indexes of the explored nodes 
             
-            %for i =(n_nodes_in_optimal_sequence-1):-1:1
+            for i =(n_nodes_in_optimal_sequence-1):-1:1
             
-                %%- find the predecessor node
-                %predecessor_node_id = ;
+                %- find the predecessor node
+                predecessor_node_id = edges(edges(:,2) == current_node, 1);
                 
-                %%- store the node id in the sequence array
-                %optimal_node_sequence(i) = ;
+                %- store the node id in the sequence array
+                optimal_node_sequence(i) = predecessor_node_id;
                 
-                %%- update the current node for the next iteration
-                %current_node = ;
-            %end
-            
+                %- update the current node for the next iteration
+                current_node = predecessor_node_id;
+            end
+
             %%- set up the output of the function 
-            varargout = {[]};                                    
+            varargout = {optimal_node_sequence};                                    
         end
     end  
 end

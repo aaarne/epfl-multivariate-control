@@ -11,7 +11,7 @@ classdef ex2
             % column vector PARAMETERS containing the parameters value
             % characterizing the system and the linearization point.
             % Specifically it should contain (in the presented order):
-            %   - k : vlue of the reference curvature. 
+            %   - k : value of the reference curvature. 
             %   - car_length : length of the car in meters.  
             %   - sigma_a : sigma_a characterizing the dynamic of the
             %   actuator tracking the inputed acceleration. 
@@ -69,7 +69,7 @@ classdef ex2
             % indicating the way the matrices PHI and GAMMA are wanted to
             % be calculated. Such an input can take values 
             % - Euler : Euler approximation as discretization method. 
-            % - Psi : Use the progrmmatically algorithm presented in the
+            % - Psi : Use the programmatically algorithm presented in the
             % note course which makes use of the intermediary matrix Psi.
             % - c2d : use the matlab command c2d. 
             %
@@ -235,14 +235,14 @@ classdef ex2
             % parameters.
             %
             % Outputs NOMINAL_TRAJECTORY_X, and NOMINAL_TRAJECTORY_U must
-            % be arrays whose first collumn correspond to the time span of
+            % be arrays whose first column correspond to the time span of
             % the data point, and successive columns store the information
             % of the states and inputs, correspondingly.
             %
             % The defined output trajectories are meant to be used in
             % Simulink with "From Workspace" importing module. If any
             % additional doubt regarding how the data should be structured,
-            % read the information provuded by the mentioned simulink block.
+            % read the information provided by the mentioned simulink block.
             %
             % todo
             % - create time vector. 
@@ -286,7 +286,7 @@ classdef ex2
             
             
             %%- define the value of x0 for experiment 1
-            x0_experiment_1 = zeros(1,5); %[0, -10, pi/3, 5, 0];
+            x0_experiment_1 = [0, 0, 0, 0, 0];
             
             %%- define the value of x0Tilde for experiment 1
             x0Tilde_experiment_1 = zeros(5,1);
@@ -356,7 +356,7 @@ classdef ex2
             % implement the observer and have to be calculated from C. 
             %
             % Output CMES is a version of the C matrix with some rows
-            % ommited, which represents the assumption that the states
+            % ommited, which represents the assumption that the states 
             % corresponding to the ommited rows are not measurable. 
             %
             % The output matrices COBS and DOBS are used in the 'Observer'

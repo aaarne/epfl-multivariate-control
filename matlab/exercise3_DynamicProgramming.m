@@ -6,7 +6,7 @@ close all;clear all;clc;
 
 %% script parameters
     sampling_time = 0.24;
-    max_n_nodes_graph = 40000;
+    max_n_nodes_graph = 100000;
     simulate_flag = true;
     %contraints
     max_lateral_deviation = 3.0; %[m]
