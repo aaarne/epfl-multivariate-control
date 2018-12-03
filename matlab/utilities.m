@@ -425,7 +425,7 @@ classdef utilities
             p.addOptional('plot',false);
             p.addOptional('max_heading_deviation',pi/4);
             p.addOptional('max_lateral_deviation',3.5);
-            p.addOptional('time_to_loose_it',1.8);
+            p.addOptional('time_to_loose_it',2);
             p.addOptional('threshold_number_of_nodes',120);
             
             p.parse(varargin{:});
@@ -442,7 +442,9 @@ classdef utilities
             
             
             %set up first node. 
-            Nodes(1,4:end) = [0,0,0,args.initial_state'];
+            initial_position = interp1(args.path_to_track.s_coordinate, args.path_to_track.coordinates, args.initial_state(1));
+            orientation = interp1(args.path_to_track.s_coordinate, args.path_to_track.orientation, args.initial_state(1)) + args.initial_state(3); 
+            Nodes(1,4:end) = [initial_position,orientation,args.initial_state'];
             
             next_node_pointer = 2;
             next_edge_pointer = 1;
@@ -455,7 +457,7 @@ classdef utilities
                 open_nodes_id_list = find( Nodes(:,3) == 0 & Nodes(:,1) < next_node_pointer);
                 
                 for root_node_id = open_nodes_id_list'
-                    cnt = obj.printProgression(cnt, args.max_n_nodes, 100);
+                    cnt = obj.printProgression(cnt, args.max_n_nodes-args.threshold_number_of_nodes, 100);
                     valid = false;
                     options = 1:size(args.allowed_u,1);
                     while ~valid && any(options>0) && ~end_flag
