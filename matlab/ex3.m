@@ -50,7 +50,7 @@ classdef ex3
             
             %%- set up the values that the control inputs are allowed to
             %%take 
-            u_1 = [3];
+            u_1 = 3;
             u_2 = [-pi/4, 0, pi/4];
             
             %%- Calculate all possible combinations of those two states 
@@ -84,17 +84,19 @@ classdef ex3
             
             %%-set up the obstacle(s) position
             obstacles01 = [
-                39, 40
-                39.5, 40
-                40, 40
-                40.5, 40
-                41, 40
-            ]
+                37, 40
+                37.5, 40
+                38, 40
+                38.5, 40
+                42, 40
+                42.5, 40
+                43, 40
+                43.5, 40
+            ];
 
             obstacles02 = [
-                obstacles01
                 0, 80
-            ]
+            ];
 
             obstacles03 = [];
 
@@ -183,8 +185,8 @@ classdef ex3
 
             % Weights:
             w_track_d = 1;
-            w_track_heading = 1;
-            w_obs_avoidance = 300;
+            w_track_heading = 50;
+            w_obs_avoidance = 1;
 
             fprintf('\nAssigning costs to nodes...');
             ut = utilities;
@@ -199,13 +201,19 @@ classdef ex3
             n_obstacles = size(obstacles.position, 1);
             dists = zeros(n_nodes, n_obstacles);
             for i = 1:n_obstacles
-                d = nodes(:,4:5) - obstacles.position(i,:);
-                dists(:,i) = sum(d.^2 , 2);
+                d = abs(nodes(:,4:5) - obstacles.position(i,:));
+                dists(:,i) = sum(d.^3 , 2);
             end
             dist_nodes_to_obs_square = sum(dists, 2);
             
             %%- calculate the obstacle_avoidance cost term. 
-            obstacle_avoidance_cost = w_obs_avoidance ./ dist_nodes_to_obs_square;
+            if n_obstacles > 0
+                obstacle_avoidance_cost = w_obs_avoidance ./ dist_nodes_to_obs_square;
+            else 
+                obstacle_avoidance_cost = 0;
+            end
+
+            disp("TODO: Recheck computation of obstacle avoidance cost");
             
             
             %%- calculate the dead_end_cost of every node
@@ -221,7 +229,7 @@ classdef ex3
             
             %iteration_counter = 0;
             for i = 1:size(edges,1)
-                iteration_counter = ut.printProgression(i, size(edges,1), 50);
+                ut.printProgression(i, size(edges,1), 50);
                 node_costs(edges(i,2)) = node_costs(edges(i,2)) + node_costs(edges(i,1));
             end
             
@@ -269,7 +277,7 @@ classdef ex3
             
             %%- find the terminal node with the lowest cost. 
             terminal_node_lowest_cost_id = terminal_nodes_id(idx);
-            disp(sprintf("Lowest cost %f at node %d.", e, terminal_node_lowest_cost_id));
+            fprintf("Lowest cost %f at node %d.\n", e, terminal_node_lowest_cost_id);
             
             %%- set up the selected terminal node as the 'current node'
             current_node = terminal_node_lowest_cost_id;
