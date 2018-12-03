@@ -105,7 +105,7 @@ clear all;close all;
     simulate_flag = ut.solutionImplemented(L_options, 'getObserverGain', simulate_flag);
 
     if ~iscell(L_options)
-        L_options = {L_options};
+        L_options = {L_options}; 
         poles_options = {poles_options};
     end
 

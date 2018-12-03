@@ -132,9 +132,9 @@ classdef ex2
             % The information regarding the values to be given to the
             % output matrices can be found in the exercise handout. 
 
-            Q1 = [1e-10, 0, 0, 0, 0;
-                  0, 10, 0, 0, 0;
-                  0, 0, 10, 0, 0;
+            Q1 = 1e2*[1e-10, 0, 0, 0, 0;
+                  0, 1, 0, 0, 0;
+                  0, 0, 1, 0, 0;
                   0, 0, 0, 1, 0;
                   0, 0, 0, 0, 1];
             Q2 = [1, 0;
@@ -210,7 +210,7 @@ classdef ex2
                 
                 %%- set the output of the function 
 
-                [K, S, e] = dlqr(Phi, Gamma, Q1, Q2);
+                [K, S, ~] = dlqr(Phi, Gamma, Q1, Q2);
                 varargout = {K, S};
             end
         end
@@ -286,7 +286,7 @@ classdef ex2
             
             
             %%- define the value of x0 for experiment 1
-            x0_experiment_1 = [0, -10, pi/3, 5, 0];
+            x0_experiment_1 = zeros(1,5); %[0, -10, pi/3, 5, 0];
             
             %%- define the value of x0Tilde for experiment 1
             x0Tilde_experiment_1 = zeros(5,1);
@@ -321,8 +321,8 @@ classdef ex2
             %
             %%- prepare noise structure
             noise.mean = [0, 0, 0, 0, 0];
-            % noise.std_deviation = [1, 1, 0.1745, 2, 0];
-            noise.std_deviation = [1, 0.1, 0.1, 0.5, 0.1];
+            noise.std_deviation = [1, 1, 0.1745, 2, 0];
+            %noise.std_deviation = [1, 0.1, 0.1, 0.5, 0.1];
             noise.seed = 42*[1, 1, 1, 1, 1];
             
             %%- set up the output of the function
@@ -456,9 +456,10 @@ classdef ex2
             %%are wanted to be. 
 
             phi_cl = Phi - Gamma * lqr_K;
-
-            percentage = 1;
-            selected_poles = percentage * eig(phi_cl); % Dead-beat observer
+            
+            percentage = 0.99;
+           
+            selected_poles = percentage * eig(phi_cl); 
             
             %%- calculate the observability matrix. 
             
