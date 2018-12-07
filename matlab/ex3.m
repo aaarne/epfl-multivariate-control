@@ -69,7 +69,7 @@ classdef ex3
             options = {'circle', 'path_1', 'path_2', 'path_3'};
             
             %%- set up the output of the function 
-            varargout = {options{1}};
+            varargout = {options{4}};
         end        
         %
         function varargout = getObstacle(~)
@@ -84,14 +84,23 @@ classdef ex3
             
             %%-set up the obstacle(s) position
             obstacles01 = [
-                37, 40
-                37.5, 40
-                38, 40
-                38.5, 40
-                42, 40
-                42.5, 40
-                43, 40
-                43.5, 40
+                57, 40
+                57.25, 40
+                57.5, 40
+                57.75, 40
+                58, 40
+                58.25, 40
+                58.5, 40
+                58.75, 40
+                62, 40
+                62.25, 40
+                62.5, 40
+                62.75, 40
+                63, 40
+                63.25, 40
+                63.5, 40
+                62.75, 40
+                63, 40
             ];
 
             obstacles02 = [
@@ -101,7 +110,8 @@ classdef ex3
             obstacles03 = [];
 
             %%- set up the output of the function 
-            varargout = {{ obstacles01, obstacles02, obstacles03 }};                                    
+            % varargout = {{ obstacles01, obstacles02, obstacles03 }};                                    
+            varargout = {{ obstacles01 }};                                    
         end        
         %
         function varargout = assignCostsToNodes(~,nodes, edges, obstacles)
@@ -185,7 +195,7 @@ classdef ex3
 
             % Weights:
             w_track_d = 1;
-            w_track_heading = 50;
+            w_track_heading = 1;
             w_obs_avoidance = 1;
 
             fprintf('\nAssigning costs to nodes...');
@@ -201,14 +211,14 @@ classdef ex3
             n_obstacles = size(obstacles.position, 1);
             dists = zeros(n_nodes, n_obstacles);
             for i = 1:n_obstacles
-                d = abs(nodes(:,4:5) - obstacles.position(i,:));
-                dists(:,i) = sum(d.^3 , 2);
+                d = sum(abs(nodes(:, 4:5) - obstacles.position(1,:)).^2, 2);
+                dists(:,i) = 1./d;
             end
             dist_nodes_to_obs_square = sum(dists, 2);
             
             %%- calculate the obstacle_avoidance cost term. 
             if n_obstacles > 0
-                obstacle_avoidance_cost = w_obs_avoidance ./ dist_nodes_to_obs_square;
+                obstacle_avoidance_cost = w_obs_avoidance * dist_nodes_to_obs_square;
             else 
                 obstacle_avoidance_cost = 0;
             end
