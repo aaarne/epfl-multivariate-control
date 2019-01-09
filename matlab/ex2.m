@@ -221,7 +221,7 @@ classdef ex2
             % wanted to be used. 
             options = {'circle', 'path_1', 'path_2', 'path_3'};
             
-            varargout = {options{3}};
+            varargout = {options{4}};
         end    
         %        
         function varargout = getWorkingTrajectory(~,sampling_time, simulation_time, parameters)

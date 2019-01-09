@@ -71,52 +71,87 @@ Finally, by decreasing the weight for the lateral deviation again, a nice perfor
 	\begin{subfigure}{0.32\textwidth}
 		\includegraphics[width=0.9\textwidth]{figures/clean_4_path.pdf}
 		\includegraphics[width=\textwidth]{figures/clean_4_input.png}
-		\subcaption{$\bb{Q}_1=\diag(0, 20, 1, 1, 1)$,\\$\bb{Q}_2=\diag(1, 0.5)$}
+		\subcaption{$\bb{Q}_1=\diag(0, 5, 1, 1, 1)$,\\$\bb{Q}_2=\diag(1, 0.5)$}
 	\end{subfigure}
 	\caption{Resulting vehicle path (red line) as response to the reference trajectory (blue dashed line) using the closed-loop state feedback LQR controller. The experiment is run for different setting of the cost function.}
 	\label{fig:lqr_closed_results}
 \end{figure}
 
 \subsection{LQR Assessment with Imperfect Information}
+Below, the performance of the closed-loop system with only imperfect information is evaluated.
+From now on, the weights for the cost functions are fixed to the good performing values from Figure~\ref{fig:lqr_closed_results} (f). Namely, the weight matrices are set to $\bb{Q}_1=\diag(0, 5, 1, 1, 1)$ and $\bb{Q}_2=\diag(1, 0.5)$.
 
-\paragraph{Adding Noise to the Fully Observable State} A white noise signal with standard deviations $\left[1, 1, 0.1745, 2, 0\right]$ is added to the state output as shown in Figure~\ref{fig:lqr_closed}.
+\paragraph{Adding Noise to the Fully Observable State:} A zero-mean Gaussian noise signal with standard deviations $\left[1, 1, 0.1745, 2, 0\right]$ is added to the state output as shown in Figure~\ref{fig:lqr_closed}. 
+The noise level is comparably high, but the vehicle still can follow the path, with some inaccuracies though (a).
+As the control signal is a linear mapping of the observed state vector, also the control signal is highly noisy as there is no filtering at all.
+The controller is purely proportional in the observed state and has no filtering effects.
+Consider, for instance, the reference angle for the steering angle $u_2$ in (b). 
+The control input is highly noisy and saturates nearly everywhere.
+However, the actuator dynamics (eq.~\ref{eq:ss5}) has low pass behavior and filters out the noise from the control input.
+In the diagram showing the evolution of the states (c) it is observable that the actual steering angle shows the filtered version of the control input with nearly no noise (state 5).
+
+As we have zero-mean noise and the actuators have low-pass behavior (eq. \ref{eq:ss4} and \ref{eq:ss5}) the closed-loop system still behaves properly and the accuracy is reasonable even with this comparatively high level of noise.
 
 
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}{0.6\textwidth}
-	\includegraphics[width=\textwidth]{figures/noisy_1_path.pdf}
-	\subcaption{Path}	
+	\begin{minipage}{0.4\textwidth}
+		\begin{subfigure}{\textwidth}
+				\includegraphics[width=\textwidth]{figures/noisy_1_path.pdf}
+				\subcaption{Path}	
+		\end{subfigure}
+		\begin{subfigure}{\textwidth}
+				\includegraphics[width=\textwidth]{figures/noisy_1_inputs.pdf}
+				\subcaption{Input}
+		\end{subfigure}
+	\end{minipage}
+	\begin{subfigure}{.59\textwidth}
+		\includegraphics[width=\textwidth]{figures/noisy_1_states.pdf}
+		\subcaption{States}	
 	\end{subfigure}
-	\begin{subfigure}{0.49\textwidth}
-	\includegraphics[width=\textwidth]{figures/noisy_1_states.pdf}
-	\subcaption{States}	
-	\end{subfigure}
-	\begin{subfigure}{0.39\textwidth}
-	\includegraphics[width=\textwidth]{figures/noisy_1_inputs.pdf}
-	\subcaption{Input}
-	\end{subfigure}
-	\caption{Performance of the LQR state feedback controller, when the state signal is distorted by noise.}
+	\caption{Performance of the LQR state feedback controller, when the state signal is distorted by noise. As the control signal is a linear mapping of the observed state vector without integrators or filters, the control signal is highly noisy as well. However, the system actuators have low-pass behavior and filter out the noise and the system still behaves properly and follow the path with small inaccuracies. Note that zero-mean Gaussian noise is used.}
 	\label{fig:noisy_states}
 \end{figure}
 
-\paragraph{Neglecting a State}
+\paragraph{Neglecting a State: } In addition, one of the states is neglected and not fed to the controller.
+In particular, we neglect the third state expressing the heading error $\theta_e$, i.e. the controller has no information about the heading error of the vehicle.
+Note, that the noise is still activated with the same settings as before.
+The resulting system behavior is shown in Figure~\ref{fig:partially_states}.
+In this setting, the controller always thinks the heading error is zero and the vehicle does not properly track the path.
+After the some time the control input for the reference steering angle is saturated all the time and the vehicle keeps moving an small circles.
+Even though there are some small peaks with positive sign, these are filtered out by the low-pass behavior of the steering wheel actuator and the steering wheel stays approximately at $-\frac{\pi}{2}$.
+For the selected cost function, the LQR state-feedback gain matrix is
+\begin{equation}
+	\bb{K}_{D_{LQR}} = \begin{bmatrix}
+	0.0000 &  -0.0000  & -0.0000  &  0.4069 &  -0.0000\\
+    0.0000  &  3.1360 &  10.5130 &  -0.0000  &  3.3271	
+	\end{bmatrix}\, .
+\end{equation}
+Accordingly, the reference steering angle is affected by the lateral deviation $x_2$, the heading error $x_3$ and the actual steering angle $x_5$. 
+As the lateral deviation becomes large and the actual steering angle can not go beyond $-\frac{\pi}{2}$ and $\frac{\pi}{2}$ the feedback value is nearly always positive as the lateral deviation is large.
+As the heading is not measured it is not available to compensate the largely positive values introduced by the feedback of the lateral deviation and the vehicle looses control.
 
 \begin{figure}[h]
-	\centering
-	\begin{subfigure}{0.49\textwidth}
-	\includegraphics[width=\textwidth]{figures/partially_1_states.png}	
-	\subcaption{States}
-	\end{subfigure}
-	\begin{subfigure}{0.49\textwidth}
-	\includegraphics[width=\textwidth]{figures/partially_1_path.pdf}
-	\subcaption{Path}	
+	\begin{minipage}{0.4\textwidth}
+		\begin{subfigure}{\textwidth}
+				\includegraphics[width=\textwidth]{figures/partially_1_path.pdf}
+				\subcaption{Path}	
+		\end{subfigure}
+		\begin{subfigure}{\textwidth}
+				\includegraphics[width=\textwidth]{figures/partially_1_inputs.png}
+				\subcaption{Input}
+		\end{subfigure}
+	\end{minipage}
+	\begin{subfigure}{.59\textwidth}
+		\includegraphics[width=\textwidth]{figures/partially_1_states.png}
+		\subcaption{States}	
 	\end{subfigure}
 	\caption{Performance of the LQR state feedback controller neglecting the heading error state for feedback.}
 	\label{fig:partially_states}
 \end{figure}
 
 \subsection{State Observer}
+Figure~\ref{fig:lqr_and_observer} shows the implementation of the closed-loop system including the LQR state feedback controller, the vehicle model and the observer.
 
 \begin{figure}[h]
 	\centering
