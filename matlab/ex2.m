@@ -132,13 +132,13 @@ classdef ex2
             % The information regarding the values to be given to the
             % output matrices can be found in the exercise handout. 
 
-            Q1 = 1e2*[1e-10, 0, 0, 0, 0;
-                  0, 1, 0, 0, 0;
+            Q1 = [1e-10, 0, 0, 0, 0;
+                  0, 5, 0, 0, 0;
                   0, 0, 1, 0, 0;
                   0, 0, 0, 1, 0;
                   0, 0, 0, 0, 1];
             Q2 = [1, 0;
-                  0, 10];
+                  0, 0.5];
 
             varargout = {Q1, Q2};
         end
@@ -322,7 +322,7 @@ classdef ex2
             %%- prepare noise structure
             noise.mean = [0, 0, 0, 0, 0];
             noise.std_deviation = [1, 1, 0.1745, 2, 0];
-            %noise.std_deviation = [1, 0.1, 0.1, 0.5, 0.1];
+            %noise.std_deviation = [0.1, 0.1, 0.01745, 0.2, 0.1];
             noise.seed = 42*[1, 1, 1, 1, 1];
             
             %%- set up the output of the function
@@ -457,7 +457,7 @@ classdef ex2
 
             phi_cl = Phi - Gamma * lqr_K;
             
-            percentage = 0.99;
+            percentage = .95;
            
             selected_poles = percentage * eig(phi_cl); 
             

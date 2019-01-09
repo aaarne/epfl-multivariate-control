@@ -132,7 +132,7 @@ Then, the recursive update rule for the matrix is given as in the course notes
 	\bb{\Psi}_{n+1} = \bb{\Psi}_n + \frac{h^n \bb{A}^n}{(n+1)!} \quad \forall n\ge0\, .
 \end{equation}
 I chose this formulation of the $\bb{\Psi}$-matrix as it is tail-recursive and can therefore be implemented in a simple ascending for-loop.
-The denominator of the increment gets large quickly as it grows $\mathfrak{O}(n!)$.
+The denominator of the increment gets large quickly as it grows $\mathcal{O}(n!)$.
 Consequently, only a few iterations are required for convergence. 
 I chose $N=10$ iterations in total.
 Given the final intermediate matrix $\bb{\Psi}_N$ the discrete-time system and input matrix can be computed as follows
@@ -303,8 +303,12 @@ In both settings the magnitudes of the steering angle and the speed are kept con
 		\includegraphics[width=\textwidth]{figures/ex1_4_9.pdf}
 		\subcaption{Turning the vehicle by going first forward and then backward with flipped sign in the steering angle.}\label{fig:ex9}
 	\end{subfigure}
-	\caption{Control input settings, where the linear approximation is very erroneous.}
+	\caption{Control input settings, where the linear approximation is very wrong.}
 	\label{fig:ex6789}
 \end{figure}
 
-
+\subsection{Summary of Observations}
+The farer we are from the reference trajectory, the wronger the outcome of the linear model. 
+Especially, changes of the steering angle lead to an erroneous result.
+As can be seen in Figure~\ref{fig:ex6789}, the errors of the states are also coupled for the linear approximation.
+For instance, the same steering angle leads to different (wrong) headings dependent of the speed.

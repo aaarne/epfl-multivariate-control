@@ -92,6 +92,12 @@ classdef ex3
                 58.25, 40
                 58.5, 40
                 58.75, 40
+                59, 40
+                59.25, 40
+                59.5, 40
+                59.75, 40
+                60, 40
+                60, 40
                 62, 40
                 62.25, 40
                 62.5, 40
@@ -103,15 +109,16 @@ classdef ex3
                 63, 40
             ];
 
-            obstacles02 = [
-                0, 80
-            ];
+            obstacles02 = obstacles01 + [2 0];
 
-            obstacles03 = [];
+            obstacles03 = obstacles01 - [2 0];
+
+            obstacles04 = obstacles01 - [4 0];
+
+            obstacles05 = [];
 
             %%- set up the output of the function 
-            % varargout = {{ obstacles01, obstacles02, obstacles03 }};                                    
-            varargout = {{ obstacles01 }};                                    
+            varargout = {{ obstacles01, obstacles02, obstacles03, obstacles04, obstacles05 }};                                    
         end        
         %
         function varargout = assignCostsToNodes(~,nodes, edges, obstacles)
@@ -196,7 +203,7 @@ classdef ex3
             % Weights:
             w_track_d = 1;
             w_track_heading = 1;
-            w_obs_avoidance = 1;
+            w_obs_avoidance = 5;
 
             fprintf('\nAssigning costs to nodes...');
             ut = utilities;
@@ -211,21 +218,18 @@ classdef ex3
             n_obstacles = size(obstacles.position, 1);
             dists = zeros(n_nodes, n_obstacles);
             for i = 1:n_obstacles
-                d = sum(abs(nodes(:, 4:5) - obstacles.position(1,:)).^2, 2);
+                d = sum(abs(nodes(:, 4:5) - obstacles.position(1,:)).^3, 2);
                 dists(:,i) = 1./d;
             end
-            dist_nodes_to_obs_square = sum(dists, 2);
+            unit_obstacle_avoidance_cost = sum(dists, 2);
             
             %%- calculate the obstacle_avoidance cost term. 
             if n_obstacles > 0
-                obstacle_avoidance_cost = w_obs_avoidance * dist_nodes_to_obs_square;
+                obstacle_avoidance_cost = w_obs_avoidance * unit_obstacle_avoidance_cost;
             else 
                 obstacle_avoidance_cost = 0;
             end
 
-            disp("TODO: Recheck computation of obstacle avoidance cost");
-            
-            
             %%- calculate the dead_end_cost of every node
             dead_end_cost = zeros(n_nodes, 1);
             dead_end_cost(nodes(:,3) == 2) = inf;
