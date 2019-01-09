@@ -457,7 +457,7 @@ classdef ex2
 
             phi_cl = Phi - Gamma * lqr_K;
             
-            percentage = .95;
+            percentage = 0.75;
            
             selected_poles = percentage * eig(phi_cl); 
             

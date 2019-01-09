@@ -152,10 +152,74 @@ As the heading is not measured it is not available to compensate the largely pos
 
 \subsection{State Observer}
 Figure~\ref{fig:lqr_and_observer} shows the implementation of the closed-loop system including the LQR state feedback controller, the vehicle model and the observer.
+The observer operates on nominal states and requires the nominal control input as well.
+It infers the non-measurable heading error state ($x_3$) given the remaining available states.
+Note, that the observer also output the estimated nominal states, not the global state.
+As the saturation acts on the global control input signal, the nominal control input must first be added and later subtracted in order to obtain a correct control input feedback signal for the observer.
 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth]{figures/lqr_observer.pdf}
 	\caption{Simulink implementation of the LQR feedback controller combined with a state observer to infer neglected states.}
 	\label{fig:lqr_and_observer}
+\end{figure}
+
+Further, the observer poles $\lambda_{obs,i}$ are set to some percentage of the poles of the linearized system $\lambda_{sys,i}$.
+The smaller the observer poles the faster the convergence of the estimated states, but also the sensitivity to noise grows and the observed states might just follow the noise signal.
+On the other hand, larger poles (close to $100\%$ of the system poles) have more filtering effect of noise, but require longer convergence times.
+Figure~\ref{fig:observer_result_paths} shows resulting paths of the vehicle using the observer and different settings for the poles.
+Additionally, Figure~\ref{fig:observer_result_states} shows the measured, estimated and true states for two of these settings.
+For a percentage of $100\%$ the noise is filtered out for the non-measured states while at $95\%$ the noise is already followed.
+
+\begin{figure}[h]
+	\begin{subfigure}{0.24\textwidth}
+		\includegraphics[height=0.8\textwidth]{figures/observer_100_path.pdf}
+		\subcaption{$\lambda_{obs,i} = 100\% \cdot \lambda_{sys,i}$}
+	\end{subfigure}
+	\begin{subfigure}{0.24\textwidth}
+		\includegraphics[height=0.8\textwidth]{figures/observer_99_path.pdf}
+		\subcaption{$\lambda_{obs,i} = 99\% \cdot \lambda_{sys,i}$}
+	\end{subfigure}
+	\begin{subfigure}{0.24\textwidth}
+		\includegraphics[height=0.8\textwidth]{figures/observer_95_path.pdf}
+		\subcaption{$\lambda_{obs,i} = 95\% \cdot \lambda_{sys,i}$}
+	\end{subfigure}
+	\begin{subfigure}{0.24\textwidth}
+		\centering
+		\includegraphics[height=0.8\textwidth]{figures/observer_90_path.pdf}
+		\subcaption{$\lambda_{obs,i} = 90\% \cdot \lambda_{sys,i}$}
+	\end{subfigure}
+	\begin{subfigure}{0.24\textwidth}
+		\includegraphics[height=0.8\textwidth]{figures/observer_75_path.pdf}
+		\subcaption{$\lambda_{obs,i} = 75\% \cdot \lambda_{sys,i}$}
+	\end{subfigure}
+	\begin{subfigure}{0.24\textwidth}
+		\centering
+		\includegraphics[height=0.8\textwidth]{figures/observer_50_path.pdf}
+		\subcaption{$\lambda_{obs,i} = 50\% \cdot \lambda_{sys,i}$}
+	\end{subfigure}
+	\begin{subfigure}{0.24\textwidth}
+		\includegraphics[width=\textwidth]{figures/observer_30_path.pdf}
+		\subcaption{$\lambda_{obs,i} = 30\% \cdot \lambda_{sys,i}$}
+	\end{subfigure}
+	\begin{subfigure}{0.24\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{figures/observer_10_path.pdf}
+		\subcaption{$\lambda_{obs,i} = 10\% \cdot \lambda_{sys,i}$}
+	\end{subfigure}
+	\caption{Resulting vehicle paths for different settings for the observer poles.}
+	\label{fig:observer_result_paths}
+\end{figure}
+
+\begin{figure}[h]
+	\begin{subfigure}{0.49\textwidth}
+		\includegraphics[width=\textwidth]{figures/observer_100_states.png}
+		\subcaption{$\lambda_{obs,i} = 100\% \cdot \lambda_{sys,i}$}
+	\end{subfigure}	
+	\begin{subfigure}{0.49\textwidth}
+		\includegraphics[width=\textwidth]{figures/observer_95_states.png}
+		\subcaption{$\lambda_{obs,i} = 95\% \cdot \lambda_{sys,i}$}
+	\end{subfigure}	
+	\caption{Observed states, measured states and true states for different settings of the observer poles. The heading error (state 3) is not measured by the observer an can be inferred. Using the system poles as observer poles, the noise is filtered out for the observed heading error. However, already at $95\%$ of the system poles, the observer follows the noise.}
+	\label{fig:observer_result_states}
 \end{figure}
