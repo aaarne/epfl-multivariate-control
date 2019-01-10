@@ -3,15 +3,17 @@
 \section{Linearization, Discretization and Simulation}
 In this first part of the case study. The given system model of the path tracking system is analyzed and simulated.
 Therefore, the system will be linearized and discretized. 
-As a nominal trajectory is required for the linearization, these will be computed first.
+As a nominal trajectory is required for the linearization, this will be computed first.
 In the end of this first part, simulation results of the simulated non-linear system, the linearized system and a dicretized linear system will be compared.
+It will be shown, that the linear approximation is not always good.
 
 \subsection{Nominal Trajectories}
 First, a nominal trajectory is computed.
-A nominal trajectory is a function of the state variables and the input variable of time.
-The nominal trajectories are a solution of the system model.
+A nominal trajectory is a function of the state variables and the input variable with respect to time.
+More precisely, it defines a function providing values for the states and inputs for each time.
+These value will be a solution to the differential equations modeling the system.
 
-In order to obtain a nominal trajectory some contraintes are added to the state space equations.
+In order to obtain a nominal trajectory some constraints are added to the state space equations.
 It is assumed that the vehicle perfectly follows the desired trajectory.
 Therefore, the lateral deviation and the heading error are zero and stay zero among all times.
 Further, a constant speed is assumed.
@@ -58,9 +60,9 @@ and for the control input $\bar{u}$
 \end{eqnarray}
 
 \subsection{Linearization using Small Signal Linearization}
-For the linearization of the system the small signal linearization approximation for deviations close to the nominal trajectory are used.
+For the linearization of the system the small signal linearization approach for deviations close to the nominal trajectory is used.
 Therefore, Jacobians of the system model $\mathbf{\dot{x}} = \mathbf{f}(\mathbf{x}, \mathbf{u}, t)$ with respect to the state vector $\mathbf{x}$ and the input vector $\mathbf{u}$ are computed.
-First the Jacobian of the nonlinear system model with respect to the state is computed
+First the Jacobian of the nonlinear system model with respect to the state is derived
 \begin{equation}
 	\frac{\partial \mathbf{f}}{\partial \mathbf{x}} = \begin{bmatrix}
 		0 & \frac{\kappa x_4 \cos(x_3)}{(kx_2 - 1)^2} & -\frac{x_4 \sin (x_3)}{1 - x_2 \kappa} & \frac{\cos (x_3)}{1 - x_2 \kappa} & 0\\
@@ -89,7 +91,7 @@ and
 \begin{equation}
 	\boldsymbol{\tilde{u}} = \mathbf{u} - \boldsymbol{\bar{u}} \, .
 \end{equation}
-Using the identity $\arctan(x) = \frac{1}{1 + x^2}$ the dynamics of the deviation from the nominal trajectory are now approximated by the linear model and the Jacobian is computed at the nominal trajectory
+Using the identity $\arctan(x) = \frac{1}{1 + x^2}$ the dynamics of the deviation from the nominal trajectory are now approximated by the linear model and the Jacobian is evaluated at the nominal trajectory
 \begin{equation}
 	\bb{\dot{\tilde{x}}} = \mathbf{A}\bb{\tilde{x}} + \mathbf{B}\bb{\tilde{u}} = \begin{bmatrix}
 		0 & \kappa v_{ref} & 0 & 1 & 0\\
@@ -125,7 +127,7 @@ and
 	\bb{\Gamma}_{euler} = \bb{B}h \, .
 \end{equation}
 
-\paragraph{Series expansion of the Matrix Exponential: } The method uses an intermediate matrix $\bb{\Psi}$ to compute better approximations for the discrete-time system and input matrix.
+\paragraph{Series Expansion of the Matrix Exponential: } The method uses an intermediate matrix $\bb{\Psi}$ to compute better approximations for the discrete-time system and input matrix.
 Define a matrix $\bb{\Psi}_0 = 0$ as the zero-matrix.
 Then, the recursive update rule for the matrix is given as in the course notes
 \begin{equation}
@@ -172,7 +174,7 @@ All three models, namely
 	\item the linearized continuous-time model and
 	\item the linearized discrete-time model
 \end{itemize}
-are implemented in SIMULINK based on the template provided. 
+are implemented in \textsc{Simulink} based on the template provided. 
 Figure~\ref{fig:simu_simulink} shows the complete diagram and Figure~\ref{fig:simu_nonlin_simulink} shows the content of the block modeling the continuous-time nonlinear system.
 Further, the nonlinear model block is completed based on equations \eqref{eq:ss1} to \eqref{eq:ss5}.
 For the simulation the paramters are set to the values given in Table~\ref{tab:simu_param_values}.
@@ -180,7 +182,7 @@ For the simulation the paramters are set to the values given in Table~\ref{tab:s
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\textwidth]{figures/simu_model.pdf}
-	\caption{Simulink model for the simulation}
+	\caption{\textsc{Simulink} model for the simulation}
 	\label{fig:simu_simulink}
 \end{figure}
 \begin{figure}[h]
@@ -213,22 +215,22 @@ Among all simulation the initial condition $\bb{x}_0$ is set to the initial valu
 \begin{equation}
 	\bb{x}_0 = \bb{\bar{x}} (0) \, 
 \end{equation}
-and the system has no transience at $t = 0$. 
+and the system consequently has no transience at $t = 0$. 
 The initial state for the linearized systems $\bb{\tilde{x}}_0$ is always set to $0$ such that, again, the system has no transience at $t=0$.
 Below, different simulations and experiments on the system are presented.
 
 \paragraph{Exact Model in the Linear Subspace of the System: }
-Consider again the system model $\mathbf{\dot{x}} = \mathbf{f}(\mathbf{x}, \mathbf{u}, t)$ in equations \eqref{eq:ss1} to \eqref{eq:ss5}.
+Consider again the nonlinear system model $\mathbf{\dot{x}} = \mathbf{f}(\mathbf{x}, \mathbf{u}, t)$ in equations \eqref{eq:ss1} to \eqref{eq:ss5}.
 The system is linear, as long as all the quantities ($x_2$, $x_3$ and $x_5$) stay constant, there is no heading error $x_3 = 0$ and the curvature $\kappa$ is zero.
 In this case, the trigonometric functions in the differential equations behave as constants and the $\frac{1}{1- \kappa x_2}$ terms vanish.
 On the nominal trajectory is no heading error and the curvature is very close ($\kappa = 1e^{-10}$) to zero.
 Therefore, in this case, even the nonlinear system model behaves linearly.
 The expectation is that there should be approximately no linearization error when applying $\bb{\bar{u}}$ as $\kappa$ is very small.
-The same is true, when applying a varying reference speed as control input $u_1$ as long as the curvature is approximately zero and there is no error.
-Figure~\ref{fig:ex1_ex2} shows two experiments, where the system is kept in the linear regime.
+The same is true, when applying a varying reference speed $u_1$ as long as the curvature is approximately zero and there is no error.
+Figure~\ref{fig:ex1_ex2} shows two experiments, where the system is kept in this linear regime.
 On the left, exactly the nominal input is applied as control input.
 On the right, a step is applied in the reference velocity control signal $u_1$.
-As the curvature is very small, the angular quantities are zero and the lateral error is zero, the system behaves approximately linearly and therefore the linearized models predict the system very well.
+As the curvature is very small, the angular quantities are zero and the lateral error is zero, the system behaves approximately linearly and the linearized models predict the system very well.
 Even though, the step is rather large (from $3$ to $60$) the linearized systems show a good prediction of the states.
 There are only very small errors in the angular state less than $2\cdot 10^{-8}$.
 \begin{figure}[h!]
@@ -248,9 +250,8 @@ There are only very small errors in the angular state less than $2\cdot 10^{-8}$
 \paragraph{Going Nonlinear by Changing the Steering Angle: }
 In the previous experiment it became obvious, that the linear approximation will work well, if the system stays in the linear subspace.
 In order to excite the nonlinearities, the control input for the steering angle $u_2$ is changed.
-Again, the initial state $\bb{x}_0$ is again set to the initial state of the nominal trajectory.
 Figure~\ref{fig:ex345} shows the results for three different speeds with the same constant steering angle input of $u_2 = \frac{\pi}{6}$.
-For low speeds (Figure~\ref{fig:ex3} and Figure~\ref{fig:ex4}) both, the continuous-time and discrete-time linear models overestimate the curvature of the path traced out by the vehicle.
+For low speeds (Figure~\ref{fig:ex3} and Figure~\ref{fig:ex4}) both, the continuous-time and discrete-time linear models, overestimate the curvature of the path traced out by the vehicle.
 On the other hand, for higher speeds as in Figure~\ref{fig:ex5} the linearized models underestimate the curvature.
 
 \begin{figure}[h]
@@ -272,11 +273,11 @@ On the other hand, for higher speeds as in Figure~\ref{fig:ex5} the linearized m
 \end{figure}
 
 \paragraph{Settings for Very Poor Linear Approximation: }
-Given the intuition from the previous when the model underestimates and when is overestimates the curvature, further experiments can be designed where the approximation is very poor. 
+Given the intuition from the previous experiments, further experiments can be designed where the approximation is very poor. 
 The resulting paths for these experiments are summarized in Figure~\ref{fig:ex6789}.
 
 In Figure~\ref{fig:ex8} the steering angle is kept constant and the speed is switched from low to high after half time. 
-As curvature of the linearly approximated path depends on the speed of the car, the curvature of the path traced out by the linear models changes upon changing the speed while the curvature of the nonlinear vehicle does not.
+As the curvature of the linearly approximated path depends on the speed of the car, the curvature of the path traced out by the linear models changes upon changing the speed while the curvature of the nonlinear model does not.
 
 Figure~\ref{fig:ex7} shows a path, where the vehicle goes back and forth on the same circle-segment with a constant magnitude in speed and a constant steering angle.
 Only the sign of the speed is flipped after half the time.
@@ -308,7 +309,7 @@ In both settings the magnitudes of the steering angle and the speed are kept con
 \end{figure}
 
 \subsection{Summary of Observations}
-The farer we are from the reference trajectory, the wronger the outcome of the linear model. 
+The farer we are from the reference trajectory, the wronger the outcomes of the linear model. 
 Especially, changes of the steering angle lead to an erroneous result.
 As can be seen in Figure~\ref{fig:ex6789}, the errors of the states are also coupled for the linear approximation.
 For instance, the same steering angle leads to different (wrong) headings dependent of the speed.
