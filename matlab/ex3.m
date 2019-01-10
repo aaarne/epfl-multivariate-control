@@ -117,8 +117,31 @@ classdef ex3
 
             obstacles05 = [];
 
+            obstacles06 = [
+                %54.87, 19.53
+                %59.57, 39.73
+                %58.28, 57.36
+                %59.49, 48.77
+                %20.1, 1.317
+                %42.01, 56.62
+                %2.56, 77.7
+                %16.77, 53.9
+                %-11.59, 29.38
+                %-30.04, 29.27
+                %-20.9, 0.1812
+                %0, 0
+            ];
+        
+            obstacles07 = [
+                3.42, 0
+                6, 0
+                9, 0
+                12, 0
+            ];
+        
             %%- set up the output of the function 
-            varargout = {{ obstacles01, obstacles02, obstacles03, obstacles04, obstacles05 }};                                    
+            varargout = {{obstacles01, obstacles02, obstacles03, obstacles04}}; 
+            %varargout = {{obstacles06}}; 
         end        
         %
         function varargout = assignCostsToNodes(~,nodes, edges, obstacles)
@@ -201,9 +224,9 @@ classdef ex3
             %
 
             % Weights:
-            w_track_d = 1;
-            w_track_heading = 1;
-            w_obs_avoidance = 5;
+            w_track_d = 10;
+            w_track_heading = 20;
+            w_obs_avoidance = 1000;
 
             fprintf('\nAssigning costs to nodes...');
             ut = utilities;
@@ -218,7 +241,7 @@ classdef ex3
             n_obstacles = size(obstacles.position, 1);
             dists = zeros(n_nodes, n_obstacles);
             for i = 1:n_obstacles
-                d = sum(abs(nodes(:, 4:5) - obstacles.position(1,:)).^3, 2);
+                d = vecnorm((nodes(:,4:5) - obstacles.position(1,:))')'.^3;
                 dists(:,i) = 1./d;
             end
             unit_obstacle_avoidance_cost = sum(dists, 2);

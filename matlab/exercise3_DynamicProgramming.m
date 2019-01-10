@@ -2,7 +2,7 @@
 %   TP :            Case study: Exercse 3
 %   Contact:        ezequiel.gonzalezdebada@epfl.ch
 %==========================================================================
-close all;clear all;clc;
+clear all;
 
 %% script parameters
 sampling_time = 0.24;
